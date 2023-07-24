@@ -1,0 +1,4 @@
+name = "NinePiecePuzzle"
+uuid = "9cc77ca6-2f53-4ccd-a066-2ff93b1becbb"
+authors = ["Tobias Thomas <tobias.thomas@tu-darmstadt.de>"]
+version = "0.1.0"
