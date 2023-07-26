@@ -8,6 +8,19 @@ function read_puzzle_file(path)
     return pieces
 end
 
+function write_puzzle_file(pieces, filepath)
+    io = open(filepath, "w")
+    whitespace = " "
+    empty = ""
+    for p in pieces
+        for e in p.edges
+            write(io, "$(e > 0 ? whitespace : empty)$e ")
+        end
+        write(io, "\n")
+    end
+    close(io)
+end
+
 function print_board_simple(board::Board)
     for i in 1:9
         piece, rot = board.pieces[i], board.rotations[i]
