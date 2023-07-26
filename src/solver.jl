@@ -1,14 +1,14 @@
 const SOLVE_ORDER = [5,6,9,8,7,4,1,2,3]
 
-function solve(pieces::Vector{Piece})
+function solve(pieces::Vector{Piece}, stop_after_n=-1)
     board = Board()
     piece_avail = fill(true, 9)
     solutions = Board[]
-    solve_rec(board, pieces, piece_avail, 1, solutions)
+    solve_rec(board, pieces, piece_avail, 1, solutions, stop_after_n)
     solutions
 end
 
-function solve_rec(board, pieces, piece_avail, current_pos, solutions)
+function solve_rec(board, pieces, piece_avail, current_pos, solutions, stop_after_n)
     board_pos = SOLVE_ORDER[current_pos]
     for next_piece in 1:9
         !piece_avail[next_piece] && continue
@@ -19,8 +19,9 @@ function solve_rec(board, pieces, piece_avail, current_pos, solutions)
                 board.rotations[board_pos] = rot
                 if current_pos == 9
                     push!(solutions, copy(board))
+                    length(solutions) == stop_after_n && return
                 else
-                    solve_rec(board, pieces, piece_avail, current_pos+1, solutions)
+                    solve_rec(board, pieces, piece_avail, current_pos+1, solutions, stop_after_n)
                 end
             end
         end
