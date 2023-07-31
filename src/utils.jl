@@ -34,15 +34,3 @@ function print_board_simple(board::Board)
         end
     end
 end
-
-# I know this is type piracy and bad style, but the package seems to have stopped development
-# still should make a pull request for it..
-function Base.getindex(lst::SLinkedList, idx::Int)
-    !(0 < idx <= length(lst)) && throw(BoundsError("index $idx"))
-    return lst[positiontoindex(idx, lst)]
-end
-
-function Base.getindex(lst::LinkedList, idx::Int)
-    !(0 < idx <= length(lst)) && throw(BoundsError("index $idx"))
-    return lst[positiontoindex(idx, lst)]
-end

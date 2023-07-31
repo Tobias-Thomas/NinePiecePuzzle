@@ -1,6 +1,6 @@
 module NinePiecePuzzle
 
-using LinkedLists
+using Combinatorics
 
 include("puzzle.jl")
 include("utils.jl")

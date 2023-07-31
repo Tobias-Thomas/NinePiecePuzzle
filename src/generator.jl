@@ -1,58 +1,33 @@
-function generate_puzzle()
-    # TODO +1s and -1s need to be at least close to balanced
-    pieces = [Piece(i, rand((-1,1), 4)) for i in 1:9]
-    value2edges = Dict{Int, SLinkedList{Tuple{Int,Int}}}()
-    for (ip,p) in enumerate(pieces)
-        for (ie,e) in enumerate(p.edges)
-            if !haskey(value2edges, e)
-                value2edges[e] = SLinkedList{Tuple{Int,Int}}()
+function all_pieces(n_colors, min_unique_colors_per_piece)
+    unique_pieces = Set{Vector{Int8}}()
+    for i in 0:n_colors^4-1
+        edge_string = string(i, base=n_colors, pad=4)
+        @assert length(edge_string) == 4 "i=$i edge_string=$edge_string"
+        length(Set(edge_string)) < min_unique_colors_per_piece && continue
+        correct_edge_string = edge_string
+        min_number = parse(Int, edge_string)
+        for _ in 1:3
+            edge_string = edge_string[2:end] * edge_string[1]
+            edge_string_value = parse(Int, edge_string)
+            if edge_string_value < min_number
+                min_number = edge_string_value
+                correct_edge_string = edge_string 
             end
-            push!(value2edges[e], (ip,ie))
+        end
+        push!(unique_pieces, [parse(Int8, e) for e in correct_edge_string])
+    end
+    collect(unique_pieces)
+end
+
+function generate_puzzle(num_colors)
+    unique_pieces = all_pieces(num_colors, 4)
+    puzzle_gen_file = open("puzzles/gen_$num_colors", "w")
+    for edges in combinations(unique_pieces, 9)
+        pieces = [Piece(i, edges[i]) for i in 1:9]
+        solutions = solve(pieces; stop_after_n=2, same_edge=true)
+        if length(solutions) == 1
+            write(puzzle_gen_file, "$(join(join.(edges)))\n")
         end
     end
-    println("$(length(value2edges[1])), $(length(value2edges[-1]))")
-    # loop until there is only one solution left
-    num_configs_tried = 0
-    while true
-        solutions = solve(pieces, 2)
-        # TODO what happens when there are 0 solutions left
-        length(solutions) == 0 && return false
-        length(solutions) == 1 && return pieces
-        # If there are still multiple solutions left do one of two things
-        # swap 2 neighboring edges (same piece) or increase the absolute value of a random edge
-        idx2change, edge2change = rand(1:9), rand(1:4)
-        if rand() > 0.5
-            # change one random edge to a higher (absolute) value
-            v2c = pieces[idx2change].edges[edge2change]
-            pieces[idx2change].edges[edge2change] += sign(v2c)
-            # change a second edge (of opposite sign) to match the new edge
-            ll2 = value2edges[-v2c]
-            ll2_idx = rand(1:length(ll2))
-            idx2change2, edge2change2 = ll2[ll2_idx]
-            @assert pieces[idx2change2].edges[edge2change2] == -v2c
-            pieces[idx2change2].edges[edge2change2] -= sign(v2c)
-            # update the value2edges dictionary
-            deleteat!(value2edges[v2c], findfirst(==((idx2change,edge2change)), value2edges[v2c]))
-            deleteat!(value2edges[-v2c], findfirst(==((idx2change2,edge2change2)), value2edges[-v2c]))
-            if !haskey(value2edges, v2c + sign(v2c))
-                value2edges[v2c + sign(v2c)] = SLinkedList{Tuple{Int,Int}}()
-                value2edges[-v2c - sign(v2c)] = SLinkedList{Tuple{Int,Int}}()
-            end
-            push!(value2edges[v2c + sign(v2c)], (idx2change,edge2change))
-            push!(value2edges[-v2c - sign(v2c)], (idx2change2,edge2change2))
-        else
-            # swap two neighboring edges
-            v1 = pieces[idx2change].edges[edge2change]
-            v2 = pieces[idx2change].edges[mod1(edge2change+1,4)]
-            pieces[idx2change].edges[edge2change] = pieces[idx2change].edges[mod1(edge2change+1, 4)]
-            pieces[idx2change].edges[mod1(idx2change+1,4)] = v1
-            # update the value2edges dictionary
-            deleteat!(value2edges[v1], findfirst(==((idx2change,edge2change)), value2edges[v1]))
-            deleteat!(value2edges[v2], findfirst(==((idx2change,mod1(edge2change+1,4))), value2edges[v2]))
-            push!(value2edges[v1], (idx2change,mod1(edge2change+1,4)))
-            push!(value2edges[v2], (idx2change,edge2change))
-        end
-        num_configs_tried += 1
-        println("tried $num_configs_tried configurations")
-    end
+    close(puzzle_gen_file)
 end
