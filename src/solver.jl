@@ -19,14 +19,17 @@ function solve_rec(board, pieces, piece_avail, current_pos, solutions, stop_afte
                 board.rotations[board_pos] = rot
                 if current_pos == 9
                     push!(solutions, copy(board))
-                    length(solutions) == stop_after_n && return
+                    length(solutions) == stop_after_n && return false
                 else
-                    solve_rec(board, pieces, piece_avail, current_pos+1, solutions, stop_after_n)
+                    solve_rec(
+                        board, pieces, piece_avail, current_pos+1, solutions, stop_after_n
+                    ) || return false
                 end
             end
         end
         piece_avail[next_piece] = true
     end
+    return true
 end
 
 const BORDERS2CHECK = [
