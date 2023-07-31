@@ -1,20 +1,20 @@
 const SOLVE_ORDER = [5,6,9,8,7,4,1,2,3]
 
-function solve(pieces::Vector{Piece}, stop_after_n=-1)
+function solve(pieces::Vector{Piece}; stop_after_n=-1, same_edge=true)
     board = Board()
     piece_avail = fill(true, 9)
     solutions = Board[]
-    solve_rec(board, pieces, piece_avail, 1, solutions, stop_after_n)
+    solve_rec(board, pieces, piece_avail, 1, solutions, stop_after_n, same_edge)
     solutions
 end
 
-function solve_rec(board, pieces, piece_avail, current_pos, solutions, stop_after_n)
+function solve_rec(board, pieces, piece_avail, current_pos, solutions, stop_after_n, same_edge)
     board_pos = SOLVE_ORDER[current_pos]
     for next_piece in 1:9
         !piece_avail[next_piece] && continue
         piece_avail[next_piece] = false
         for rot in 0:3
-            if check_if_piece_fits(board, pieces[next_piece], board_pos, rot)
+            if check_if_piece_fits(board, pieces[next_piece], board_pos, rot, same_edge)
                 board.pieces[board_pos] = pieces[next_piece]
                 board.rotations[board_pos] = rot
                 if current_pos == 9
@@ -22,7 +22,7 @@ function solve_rec(board, pieces, piece_avail, current_pos, solutions, stop_afte
                     length(solutions) == stop_after_n && return false
                 else
                     solve_rec(
-                        board, pieces, piece_avail, current_pos+1, solutions, stop_after_n
+                        board, pieces, piece_avail, current_pos+1, solutions, stop_after_n, same_edge
                     ) || return false
                 end
             end
@@ -44,7 +44,7 @@ const BORDERS2CHECK = [
     [(6,3)]
 ]
 
-function check_if_piece_fits(board, piece, piece_position, piece_rotation)
+function check_if_piece_fits(board, piece, piece_position, piece_rotation, same_edge)
     if piece_position == 5
         return piece_rotation == 0
     end
@@ -54,7 +54,11 @@ function check_if_piece_fits(board, piece, piece_position, piece_rotation)
         other_piece_edges = board.pieces[other_position].edges
         other_edge_value = other_piece_edges[mod1(other_edge-board.rotations[other_position], 4)]
         piece_edge_value = piece.edges[mod1(piece_edge-piece_rotation, 4)]
-        piece_edge_value + other_edge_value != 0 && return false
+        if same_edge
+            piece_edge_value == other_edge_value && return false
+        else
+            piece_edge_value + other_edge_value != 0 && return false
+        end
     end
     return true
 end
