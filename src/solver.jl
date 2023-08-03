@@ -55,7 +55,7 @@ function check_if_piece_fits(board, piece, piece_position, piece_rotation, same_
         other_edge_value = other_piece_edges[mod1(other_edge-board.rotations[other_position], 4)]
         piece_edge_value = piece.edges[mod1(piece_edge-piece_rotation, 4)]
         if same_edge
-            piece_edge_value == other_edge_value && return false
+            piece_edge_value != other_edge_value && return false
         else
             piece_edge_value + other_edge_value != 0 && return false
         end
