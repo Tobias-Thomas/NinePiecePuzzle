@@ -4,25 +4,27 @@ function solve(pieces::Vector{Piece}; stop_after_n=-1, same_edge=true)
     board = Board()
     piece_avail = fill(true, 9)
     solutions = Board[]
-    solve_rec(board, pieces, piece_avail, 1, solutions, stop_after_n, same_edge)
-    solutions
+    tries_at_depth = fill(0, 9)
+    solve_rec(board, pieces, piece_avail, 1, tries_at_depth, solutions, stop_after_n, same_edge)
+    solutions, tries_at_depth
 end
 
-function solve_rec(board, pieces, piece_avail, current_pos, solutions, stop_after_n, same_edge)
-    board_pos = SOLVE_ORDER[current_pos]
+function solve_rec(board, pieces, piece_avail, depth, tries_at_depth, solutions, stop_after_n, same_edge)
+    board_pos = SOLVE_ORDER[depth]
     for next_piece in 1:9
         !piece_avail[next_piece] && continue
         piece_avail[next_piece] = false
         for rot in 0:3
             if check_if_piece_fits(board, pieces[next_piece], board_pos, rot, same_edge)
+                tries_at_depth[depth] += 1
                 board.pieces[board_pos] = pieces[next_piece]
                 board.rotations[board_pos] = rot
-                if current_pos == 9
+                if depth == 9
                     push!(solutions, copy(board))
                     length(solutions) == stop_after_n && return false
                 else
                     solve_rec(
-                        board, pieces, piece_avail, current_pos+1, solutions, stop_after_n, same_edge
+                        board, pieces, piece_avail, depth+1, tries_at_depth, solutions, stop_after_n, same_edge
                     ) || return false
                 end
             end
