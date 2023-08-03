@@ -19,7 +19,7 @@ function all_pieces(n_colors, min_unique_colors_per_piece)
     collect(unique_pieces)
 end
 
-function generate_puzzle(num_colors)
+function generate_puzzles(num_colors)
     unique_pieces = all_pieces(num_colors, 4)
     puzzle_gen_file = open("puzzles/gen_$num_colors", "w")
     for edges in combinations(unique_pieces, 9)

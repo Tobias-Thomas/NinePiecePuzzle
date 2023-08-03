@@ -9,6 +9,6 @@ include("generator.jl")
 
 export Piece, Board
 export read_puzzle_file, write_puzzle_file, solve
-export generate_puzzle
+export generate_puzzles
 
 end # module NinePiecePuzzle
